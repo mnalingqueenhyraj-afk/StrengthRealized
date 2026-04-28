@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strength Realized — Coach Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rose: #993556;
+  --rose-d: #72243E;
+  --rose-l: #D4537E;
+  --rose-pale: #FBEAF0;
+  --rose-mid: #F4C0D1;
+  --cream: #FAF8F5;
+  --parchment: #F3EFE9;
+  --ink: #1C1715;
+  --ink-2: #4A3F3B;
+  --ink-3: #8A7A75;
+  --ink-4: #C4B8B3;
+  --border: rgba(153,53,86,0.10);
+  --border-2: rgba(153,53,86,0.20);
+  --white: #FFFFFF;
+  --success: #2A6E47;
+  --success-pale: #E8F4ED;
+  --warn: #8A5E0A;
+  --warn-pale: #FEF6E4;
+  --info: #1A4F82;
+  --info-pale: #E5F0FB;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Jost', system-ui, sans-serif;
+  --r: 12px;
+  --r-sm: 7px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--cream); color: var(--ink); min-height: 100vh; font-size: 14px; font-weight: 300; }
+
+/* ── LAYOUT ── */
+.shell { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.rail {
+  width: 220px; flex-shrink: 0;
+  background: var(--ink);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  z-index: 100;
+}
+.rail-top { padding: 28px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.rail-logo { font-family: var(--font-serif); font-size: 18px; color: var(--rose-mid); line-height: 1.2; margin-bottom: 2px; }
+.rail-role { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; }
+
+.rail-coach { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; gap: 10px; }
+.coach-av {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--rose); color: white;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-family: var(--font-serif);
+}
+.coach-nm { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 400; }
+.coach-ttl { font-size: 10px; color: rgba(255,255,255,0.35); }
+
+.rail-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+.rail-section { font-size: 9px; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.14em; font-weight: 400; padding: 0 8px; margin: 16px 0 6px; }
+.rail-section:first-child { margin-top: 0; }
+
+.rail-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 10px;
+  border-radius: var(--r-sm);
+  border: none; background: none;
+  color: rgba(255,255,255,0.45);
+  font-size: 13px; font-weight: 300;
+  cursor: pointer; text-align: left;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+  margin-bottom: 1px;
+}
+.rail-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+.rail-btn.active { background: var(--rose); color: white; font-weight: 400; }
+.rail-btn svg { flex-shrink: 0; opacity: 0.7; }
+.rail-btn.active svg { opacity: 1; }
+.rail-badge {
+  margin-left: auto; background: var(--rose-l); color: white;
+  font-size: 9px; font-weight: 500;
+  padding: 2px 6px; border-radius: 20px; min-width: 18px; text-align: center;
+}
+.rail-btn.active .rail-badge { background: rgba(255,255,255,0.25); }
+
+.rail-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.07); }
+.rail-footer-text { font-size: 10px; color: rgba(255,255,255,0.2); line-height: 1.6; }
+
+/* ── MAIN ── */
+.main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-left { display: flex; align-items: baseline; gap: 14px; }
+.tb-title { font-family: var(--font-serif); font-size: 22px; color: var(--ink); font-weight: 500; }
+.tb-sub { font-size: 12px; color: var(--ink-3); font-weight: 300; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.btn-pri {
+  background: var(--rose); color: white; border: none;
+  border-radius: 40px; padding: 8px 18px;
+  font-size: 12px; font-weight: 400; cursor: pointer;
+  font-family: var(--font-sans); transition: background 0.15s; letter-spacing: 0.02em;
+}
+.btn-pri:hover { background: var(--rose-d); }
+.btn-sec {
+  background: none; color: var(--rose);
+  border: 1px solid var(--rose-mid);
+  border-radius: 40px; padding: 7px 16px;
+  font-size: 12px; font-weight: 400; cursor: pointer;
+  font-family: var(--font-sans); transition: all 0.15s;
+}
+.btn-sec:hover { background: var(--rose-pale); }
+.btn-ghost {
+  background: none; border: none; color: var(--ink-3);
+  font-size: 12px; cursor: pointer; padding: 7px 12px;
+  font-family: var(--font-sans); border-radius: 40px;
+  transition: all 0.15s; font-weight: 300;
+}
+.btn-ghost:hover { background: var(--parchment); color: var(--ink); }
+
+.notif-icon {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--rose-pale); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; transition: background 0.15s;
+}
+.notif-icon:hover { background: var(--rose-mid); }
+.notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--rose); border: 2px solid var(--white);
+}
+
+.content { padding: 28px 32px; flex: 1; }
+
+/* ── SCREENS ── */
+.screen { display: none; animation: fadeUp 0.2s ease; }
+.screen.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 22px 24px;
+}
+.card-hd {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.card-hd-title { font-size: 13px; font-weight: 400; color: var(--ink); }
+.card-hd-action { font-size: 11px; color: var(--rose); cursor: pointer; font-weight: 400; }
+.card-hd-action:hover { text-decoration: underline; }
+
+/* ── STAT CARDS ── */
+.stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-c {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px 18px;
+}
+.stat-lbl { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.09em; font-weight: 400; margin-bottom: 6px; }
+.stat-num { font-family: var(--font-serif); font-size: 32px; color: var(--ink); line-height: 1; font-weight: 400; }
+.stat-unit { font-size: 13px; color: var(--ink-3); font-family: var(--font-sans); font-weight: 300; }
+.stat-delta { font-size: 11px; margin-top: 4px; font-weight: 300; }
+.delta-up { color: var(--success); }
+.delta-neutral { color: var(--ink-3); }
+
+/* ── CLIENT TABLE ── */
+.client-table { width: 100%; border-collapse: collapse; }
+.client-table th {
+  text-align: left; padding: 0 16px 10px;
+  font-size: 10px; color: var(--ink-3); text-transform: uppercase;
+  letter-spacing: 0.09em; font-weight: 400; border-bottom: 1px solid var(--border);
+}
+.client-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.client-table tr:last-child td { border-bottom: none; }
+.client-table tbody tr { cursor: pointer; transition: background 0.1s; }
+.client-table tbody tr:hover { background: var(--rose-pale); }
+
+.av-sm {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 500; font-family: var(--font-serif); flex-shrink: 0;
+}
+.client-row-name { display: flex; align-items: center; gap: 10px; }
+.cl-name { font-size: 13px; font-weight: 400; color: var(--ink); }
+.cl-since { font-size: 11px; color: var(--ink-3); font-weight: 300; }
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 400;
+}
+.status-active { background: var(--success-pale); color: var(--success); }
+.status-checkin { background: var(--warn-pale); color: var(--warn); }
+.status-new { background: var(--info-pale); color: var(--info); }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.mini-bar-wrap { width: 80px; }
+.mini-bar-track { background: var(--parchment); border-radius: 20px; height: 5px; }
+.mini-bar-fill { height: 5px; border-radius: 20px; background: var(--rose-l); }
+.mini-bar-label { font-size: 10px; color: var(--ink-3); margin-top: 3px; font-weight: 300; }
+
+.action-link { font-size: 11px; color: var(--rose); cursor: pointer; font-weight: 400; white-space: nowrap; }
+.action-link:hover { text-decoration: underline; }
+
+/* ── CLIENT PROFILE ── */
+.profile-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+.profile-side { display: flex; flex-direction: column; gap: 16px; }
+.profile-main { display: flex; flex-direction: column; gap: 16px; }
+
+.profile-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden;
+}
+.profile-header {
+  background: linear-gradient(135deg, var(--rose) 0%, var(--rose-d) 100%);
+  padding: 24px 20px; text-align: center;
+}
+.profile-av {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: white; font-family: var(--font-serif); font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px;
+}
+.profile-name { font-family: var(--font-serif); font-size: 20px; color: white; margin-bottom: 2px; }
+.profile-tag { font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 300; }
+.profile-body { padding: 18px 20px; }
+.profile-stat-row { display: flex; justify-content: space-around; padding: 14px 0; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.profile-stat { text-align: center; }
+.profile-stat-num { font-family: var(--font-serif); font-size: 20px; color: var(--rose); }
+.profile-stat-lbl { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 300; }
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 12px; }
+.info-label { color: var(--ink-3); font-weight: 300; }
+.info-val { color: var(--ink); font-weight: 400; }
+
+/* ── PILLAR SCORES ── */
+.pillar-list { display: flex; flex-direction: column; gap: 12px; }
+.pillar-row { }
+.pillar-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.pillar-name { font-size: 12px; font-weight: 400; color: var(--ink); }
+.pillar-pct { font-size: 12px; font-weight: 400; color: var(--rose); }
+.pillar-track { background: var(--parchment); border-radius: 20px; height: 5px; }
+.pillar-fill { height: 5px; border-radius: 20px; background: var(--rose-l); transition: width 0.6s ease; }
+.pillar-note { font-size: 10px; color: var(--ink-3); margin-top: 3px; font-weight: 300; }
+
+/* ── ALERTS ── */
+.alert-list { display: flex; flex-direction: column; gap: 8px; }
+.alert-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 14px; border-radius: var(--r-sm);
+  font-size: 12px; line-height: 1.55;
+}
+.alert-warn { background: var(--warn-pale); color: var(--warn); }
+.alert-good { background: var(--success-pale); color: var(--success); }
+.alert-info { background: var(--info-pale); color: var(--info); }
+.alert-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-top: 4px; flex-shrink: 0; }
+.alert-text strong { font-weight: 500; }
+
+/* ── WEEK SCHEDULE VIEW ── */
+.schedule-grid { display: grid; grid-template-columns: 140px repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: var(--r); overflow: hidden; }
+.sch-cell { background: var(--white); padding: 9px 10px; font-size: 11px; }
+.sch-head { background: var(--parchment); font-weight: 400; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.07em; font-size: 10px; }
+.sch-client-cell { font-size: 12px; font-weight: 400; color: var(--ink); display: flex; align-items: center; gap: 7px; }
+.sch-workout { background: var(--rose-pale); color: var(--rose); border-radius: 4px; padding: 3px 7px; font-size: 10px; font-weight: 400; white-space: nowrap; }
+.sch-rest { color: var(--ink-4); font-size: 10px; font-style: italic; }
+.sch-done { background: var(--success-pale); color: var(--success); border-radius: 4px; padding: 3px 7px; font-size: 10px; }
+
+/* ── MESSAGES PANEL ── */
+.msg-layout { display: grid; grid-template-columns: 240px 1fr; border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: var(--white); min-height: 520px; }
+.msg-list { border-right: 1px solid var(--border); }
+.msg-list-hd { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 400; color: var(--ink); }
+.msg-thread {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 14px; cursor: pointer;
+  transition: background 0.1s; border-bottom: 1px solid var(--border);
+}
+.msg-thread:hover { background: var(--parchment); }
+.msg-thread.active { background: var(--rose-pale); }
+.mt-av { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: var(--font-serif); color: white; flex-shrink: 0; }
+.mt-name { font-size: 12px; font-weight: 400; color: var(--ink); }
+.mt-preview { font-size: 11px; color: var(--ink-3); font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.mt-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--rose); margin-left: auto; flex-shrink: 0; }
+.mt-time { font-size: 10px; color: var(--ink-4); font-weight: 300; }
+
+.msg-pane { display: flex; flex-direction: column; }
+.msg-pane-hd { padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.mp-name { font-size: 13px; font-weight: 400; color: var(--ink); }
+.mp-status { font-size: 11px; color: var(--success); }
+.mp-actions { margin-left: auto; display: flex; gap: 6px; }
+.msg-body { flex: 1; padding: 18px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 320px; max-height: 360px; }
+.bubble-wrap { display: flex; flex-direction: column; }
+.bubble-wrap.coach { align-items: flex-end; }
+.bubble-wrap.client { align-items: flex-start; }
+.bubble {
+  max-width: 70%; padding: 10px 14px;
+  border-radius: 14px; font-size: 12px; line-height: 1.6;
+}
+.bubble-wrap.coach .bubble { background: var(--rose); color: white; border-bottom-right-radius: 3px; }
+.bubble-wrap.client .bubble { background: var(--parchment); color: var(--ink); border-bottom-left-radius: 3px; }
+.bubble-time { font-size: 10px; color: var(--ink-4); margin-top: 3px; padding: 0 2px; font-weight: 300; }
+.msg-input-row { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+.msg-in {
+  flex: 1; padding: 9px 14px; border: 1px solid var(--border-2);
+  border-radius: 40px; font-size: 12px; color: var(--ink);
+  background: var(--cream); font-family: var(--font-sans); font-weight: 300;
+  outline: none; transition: border-color 0.15s;
+}
+.msg-in:focus { border-color: var(--rose); background: white; }
+.msg-send-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--rose); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.15s;
+}
+.msg-send-btn:hover { background: var(--rose-d); }
+
+/* ── MODAL ── */
+.overlay {
+  position: fixed; inset: 0; background: rgba(28,23,21,0.55);
+  z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: var(--r);
+  width: 100%; max-width: 500px; max-height: 90vh;
+  overflow-y: auto; padding: 28px; position: relative;
+}
+.modal-title { font-family: var(--font-serif); font-size: 22px; color: var(--ink); margin-bottom: 4px; }
+.modal-sub { font-size: 12px; color: var(--ink-3); margin-bottom: 22px; font-weight: 300; }
+.modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--ink-3); line-height: 1; }
+.modal-close:hover { color: var(--ink); }
+.form-grp { margin-bottom: 14px; }
+.form-lbl { font-size: 10px; font-weight: 400; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: block; }
+.form-ctrl {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border-2);
+  border-radius: var(--r-sm); font-size: 13px; color: var(--ink);
+  background: var(--cream); font-family: var(--font-sans); font-weight: 300;
+  outline: none; transition: border-color 0.15s;
+}
+.form-ctrl:focus { border-color: var(--rose); background: white; }
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+textarea.form-ctrl { resize: vertical; min-height: 80px; }
+select.form-ctrl { cursor: pointer; }
+
+/* ── ANALYTICS ── */
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-wrap { height: 140px; display: flex; align-items: flex-end; gap: 5px; }
+.bar {
+  flex: 1; border-radius: 4px 4px 0 0;
+  cursor: pointer; transition: opacity 0.15s; position: relative;
+}
+.bar:hover { opacity: 0.8; }
+.bar-lbl { font-size: 9px; color: var(--ink-3); text-align: center; margin-top: 4px; font-weight: 300; }
+.bar-val { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--ink-3); white-space: nowrap; font-weight: 300; }
+
+.donut-wrap { display: flex; align-items: center; gap: 16px; }
+.donut-svg { flex-shrink: 0; }
+.donut-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--ink-2); font-weight: 300; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── TAGS ── */
+.tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 400; }
+.tag-strength { background: var(--rose-pale); color: var(--rose); }
+.tag-fuel { background: var(--success-pale); color: var(--success); }
+.tag-evidence { background: var(--info-pale); color: var(--info); }
+.tag-new { background: var(--warn-pale); color: var(--warn); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--ink); color: white;
+  padding: 11px 18px; border-radius: var(--r-sm);
+  font-size: 12px; z-index: 999;
+  opacity: 0; transform: translateY(6px);
+  transition: all 0.25s; pointer-events: none;
+  font-weight: 300;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── PROGRESS RINGS (svg) ── */
+.ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ring-label { font-size: 10px; color: var(--ink-3); text-align: center; font-weight: 300; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .stats-row { grid-template-columns: repeat(3, 1fr); }
+  .profile-grid { grid-template-columns: 1fr; }
+  .analytics-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 800px) {
+  .rail { display: none; }
+  .main { margin-left: 0; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- RAIL -->
+<aside class="rail">
+  <div class="rail-top">
+    <div class="rail-logo">Strength Realized</div>
+    <div class="rail-role">Coach Dashboard</div>
+  </div>
+  <div class="rail-coach">
+    <div class="coach-av">LC</div>
+    <div>
+      <div class="coach-nm">Liz Cairo</div>
+      <div class="coach-ttl">Head Coach</div>
+    </div>
+  </div>
+  <nav class="rail-nav">
+    <div class="rail-section">Overview</div>
+    <button class="rail-btn active" onclick="showScreen('overview')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="currentColor"/><rect x="8" y="1" width="5" height="5" rx="1" fill="currentColor" opacity="0.5"/><rect x="1" y="8" width="5" height="5" rx="1" fill="currentColor" opacity="0.5"/><rect x="8" y="8" width="5" height="5" rx="1" fill="currentColor" opacity="0.5"/></svg>
+      Overview
+    </button>
+    <button class="rail-btn" onclick="showScreen('clients')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.1"/><path d="M1 12c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><circle cx="10.5" cy="4.5" r="2" stroke="currentColor" stroke-width="1.1" opacity="0.6"/><path d="M12.5 11.5c0-1.4-.9-2.6-2-3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/></svg>
+      All Clients
+      <span class="rail-badge">12</span>
+    </button>
+    <button class="rail-btn" onclick="showScreen('checkins')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 2.5V1M10 2.5V1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><path d="M1.5 5.5h11" stroke="currentColor" stroke-width="1.1"/><path d="M4.5 8.5l1.5 1.5L9.5 7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Check-ins
+      <span class="rail-badge">3</span>
+    </button>
+
+    <div class="rail-section">Coaching</div>
+    <button class="rail-btn" onclick="showScreen('schedule')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 5.5h11M5 2.5V1M9 2.5V1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+      Schedule
+    </button>
+    <button class="rail-btn" onclick="showScreen('messages')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 2.5h11v8H8L5.5 12.5v-2H1.5v-8z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+      Messages
+      <span class="rail-badge">5</span>
+    </button>
+    <button class="rail-btn" onclick="showScreen('programs')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M4 5h6M4 7.5h4M4 10h5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+      Programs
+    </button>
+
+    <div class="rail-section">Insights</div>
+    <button class="rail-btn" onclick="showScreen('analytics')">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 11L4 7.5L7 9L10 5L13 3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Analytics
+    </button>
+  </nav>
+  <div class="rail-footer">
+    <div class="rail-footer-text">Strength Realized<br>Coach Portal v1.0<br>© 2026 Liz Cairo</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="tb-title" id="tb-title">Overview</div>
+      <div class="tb-sub" id="tb-sub">Tuesday, April 28, 2026</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-ghost" onclick="openAddClient()">+ New client</button>
+      <button class="btn-pri" onclick="showScreen('messages')">Message client</button>
+      <button class="notif-icon" onclick="showToast('3 check-ins pending review.')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 015 5v2l1 2H2l1-2V7a5 5 0 015-5zM6.5 13a1.5 1.5 0 003 0" stroke="#993556" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <div class="notif-dot"></div>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="screen-overview" class="screen active">
+
+      <div class="stats-row">
+        <div class="stat-c">
+          <div class="stat-lbl">Active clients</div>
+          <div class="stat-num">12</div>
+          <div class="stat-delta delta-up">+2 this month</div>
+        </div>
+        <div class="stat-c">
+          <div class="stat-lbl">Check-ins due</div>
+          <div class="stat-num">3</div>
+          <div class="stat-delta delta-neutral">This week</div>
+        </div>
+        <div class="stat-c">
+          <div class="stat-lbl">Avg compliance</div>
+          <div class="stat-num">84<span class="stat-unit">%</span></div>
+          <div class="stat-delta delta-up">+6% vs last month</div>
+        </div>
+        <div class="stat-c">
+          <div class="stat-lbl">Unread messages</div>
+          <div class="stat-num">5</div>
+          <div class="stat-delta delta-neutral">Across 3 clients</div>
+        </div>
+        <div class="stat-c">
+          <div class="stat-lbl">Avg protein goal</div>
+          <div class="stat-num">81<span class="stat-unit">%</span></div>
+          <div class="stat-delta delta-up">Up from 74%</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;margin-bottom:18px;">
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-title">Clients needing attention</div>
+            <div class="card-hd-action" onclick="showScreen('clients')">View all</div>
+          </div>
+          <div class="alert-list">
+            <div class="alert-item alert-warn">
+              <div class="alert-dot"></div>
+              <div class="alert-text"><strong>Maria Santos</strong> — missed 2 workouts this week. Last logged Monday. Check-in due Friday.</div>
+            </div>
+            <div class="alert-item alert-warn">
+              <div class="alert-dot"></div>
+              <div class="alert-text"><strong>Jennifer Walsh</strong> — protein average dropped to 68g (goal: 120g). 3 days below target.</div>
+            </div>
+            <div class="alert-item alert-warn">
+              <div class="alert-dot"></div>
+              <div class="alert-text"><strong>Karen Mitchell</strong> — week 16 complete. Program renewal due. No response to message sent Apr 26.</div>
+            </div>
+            <div class="alert-item alert-good">
+              <div class="alert-dot"></div>
+              <div class="alert-text"><strong>Sarah Chen</strong> — week 14, 87% compliance. Goblet squat up 10 lbs since start. On track.</div>
+            </div>
+            <div class="alert-item alert-info">
+              <div class="alert-dot"></div>
+              <div class="alert-text"><strong>Diana Park</strong> — new client onboarded Apr 27. Assessment quiz completed. First session Thursday.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="card">
+            <div class="card-hd"><div class="card-hd-title">Today's check-ins</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--rose-pale);border-radius:var(--r-sm);cursor:pointer;" onclick="showScreen('checkins')">
+                <div class="av-sm" style="background:var(--rose);color:white;">SC</div>
+                <div style="flex:1;"><div style="font-size:12px;font-weight:400;color:var(--ink);">Sarah Chen</div><div style="font-size:10px;color:var(--rose);">Week 14 check-in</div></div>
+                <div class="tag tag-strength">Due</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--warn-pale);border-radius:var(--r-sm);cursor:pointer;" onclick="showScreen('checkins')">
+                <div class="av-sm" style="background:var(--warn);color:white;">JW</div>
+                <div style="flex:1;"><div style="font-size:12px;font-weight:400;color:var(--ink);">Jennifer Walsh</div><div style="font-size:10px;color:var(--warn);">Week 8 check-in</div></div>
+                <div class="tag tag-new">Urgent</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--parchment);border-radius:var(--r-sm);cursor:pointer;" onclick="showScreen('checkins')">
+                <div class="av-sm" style="background:var(--ink-3);color:white;">KM</div>
+                <div style="flex:1;"><div style="font-size:12px;font-weight:400;color:var(--ink);">Karen Mitchell</div><div style="font-size:10px;color:var(--ink-3);">Program renewal</div></div>
+                <div class="tag tag-evidence">Review</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd"><div class="card-hd-title">Pillar compliance — all clients</div></div>
+            <div class="pillar-list">
+              <div class="pillar-row">
+                <div class="pillar-top"><span class="pillar-name">Real Strength</span><span class="pillar-pct">82%</span></div>
+                <div class="pillar-track"><div class="pillar-fill" style="width:82%"></div></div>
+              </div>
+              <div class="pillar-row">
+                <div class="pillar-top"><span class="pillar-name">Real Fuel</span><span class="pillar-pct">74%</span></div>
+                <div class="pillar-track"><div class="pillar-fill" style="width:74%"></div></div>
+              </div>
+              <div class="pillar-row">
+                <div class="pillar-top"><span class="pillar-name">Real Evidence</span><span class="pillar-pct">91%</span></div>
+                <div class="pillar-track"><div class="pillar-fill" style="width:91%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-hd-title">Recent client activity</div>
+          <div class="card-hd-action" onclick="showScreen('clients')">All clients</div>
+        </div>
+        <table class="client-table">
+          <thead><tr>
+            <th>Client</th><th>Status</th><th>Program week</th><th>Last workout</th><th>Protein avg</th><th>Compliance</th><th></th>
+          </tr></thead>
+          <tbody>
+            <tr onclick="showClient('sarah')">
+              <td><div class="client-row-name"><div class="av-sm" style="background:#D4537E;color:white;">SC</div><div><div class="cl-name">Sarah Chen</div><div class="cl-since">Since Jan 2025</div></div></div></td>
+              <td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td>
+              <td>14 / 16</td>
+              <td>Apr 25</td>
+              <td>112g / 130g</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:87%"></div></div><div class="mini-bar-label">87%</div></div></td>
+              <td><span class="action-link" onclick="event.stopPropagation();showClient('sarah')">View →</span></td>
+            </tr>
+            <tr onclick="showClient('jennifer')">
+              <td><div class="client-row-name"><div class="av-sm" style="background:#993556;color:white;">JW</div><div><div class="cl-name">Jennifer Walsh</div><div class="cl-since">Since Feb 2025</div></div></div></td>
+              <td><span class="status-pill status-checkin"><span class="status-dot"></span>Needs attention</span></td>
+              <td>8 / 16</td>
+              <td>Apr 22</td>
+              <td>68g / 120g</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:61%"></div></div><div class="mini-bar-label">61%</div></div></td>
+              <td><span class="action-link" onclick="event.stopPropagation();showClient('jennifer')">View →</span></td>
+            </tr>
+            <tr onclick="showClient('diana')">
+              <td><div class="client-row-name"><div class="av-sm" style="background:#72243E;color:white;">DP</div><div><div class="cl-name">Diana Park</div><div class="cl-since">Since Apr 2025</div></div></div></td>
+              <td><span class="status-pill status-new"><span class="status-dot"></span>New client</span></td>
+              <td>1 / 16</td>
+              <td>—</td>
+              <td>—</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:0%"></div></div><div class="mini-bar-label">Starting</div></div></td>
+              <td><span class="action-link" onclick="event.stopPropagation();showClient('diana')">View →</span></td>
+            </tr>
+            <tr>
+              <td><div class="client-row-name"><div class="av-sm" style="background:#F4C0D1;color:#72243E;">ML</div><div><div class="cl-name">Margaret Lee</div><div class="cl-since">Since Nov 2024</div></div></div></td>
+              <td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td>
+              <td>24 / ongoing</td>
+              <td>Apr 27</td>
+              <td>128g / 130g</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:95%"></div></div><div class="mini-bar-label">95%</div></div></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+            <tr>
+              <td><div class="client-row-name"><div class="av-sm" style="background:#FBEAF0;color:#993556;">KM</div><div><div class="cl-name">Karen Mitchell</div><div class="cl-since">Since Dec 2024</div></div></div></td>
+              <td><span class="status-pill status-checkin"><span class="status-dot"></span>Renewal due</span></td>
+              <td>16 / 16</td>
+              <td>Apr 24</td>
+              <td>118g / 125g</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:88%"></div></div><div class="mini-bar-label">88%</div></div></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div id="screen-clients" class="screen">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div></div>
+        <div style="display:flex;gap:8px;">
+          <input class="form-ctrl" style="width:200px;padding:7px 12px;font-size:12px;" placeholder="Search clients..." oninput="filterClients(this.value)" />
+          <button class="btn-pri" onclick="openAddClient()">+ Add client</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="client-table" id="clients-table">
+          <thead><tr>
+            <th style="padding-left:20px;">Client</th><th>Status</th><th>Age</th><th>Program</th><th>Compliance</th><th>Last active</th><th>Pillar focus</th><th></th>
+          </tr></thead>
+          <tbody id="clients-tbody">
+            <tr onclick="showClient('sarah')">
+              <td style="padding-left:20px;"><div class="client-row-name"><div class="av-sm" style="background:#D4537E;color:white;">SC</div><div><div class="cl-name">Sarah Chen</div><div class="cl-since">sarah@email.com</div></div></div></td>
+              <td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td>
+              <td>52</td><td>1:1 Private · W14</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:87%"></div></div><div class="mini-bar-label">87%</div></div></td>
+              <td>Apr 25</td>
+              <td><span class="tag tag-strength">Strength</span></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+            <tr onclick="showClient('jennifer')">
+              <td style="padding-left:20px;"><div class="client-row-name"><div class="av-sm" style="background:#993556;color:white;">JW</div><div><div class="cl-name">Jennifer Walsh</div><div class="cl-since">jen@email.com</div></div></div></td>
+              <td><span class="status-pill status-checkin"><span class="status-dot"></span>Needs attention</span></td>
+              <td>47</td><td>1:1 Private · W8</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:61%"></div></div><div class="mini-bar-label">61%</div></div></td>
+              <td>Apr 22</td>
+              <td><span class="tag tag-fuel">Fuel</span></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+            <tr onclick="showClient('diana')">
+              <td style="padding-left:20px;"><div class="client-row-name"><div class="av-sm" style="background:#72243E;color:white;">DP</div><div><div class="cl-name">Diana Park</div><div class="cl-since">diana@email.com</div></div></div></td>
+              <td><span class="status-pill status-new"><span class="status-dot"></span>New client</span></td>
+              <td>44</td><td>1:1 Private · W1</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:0%"></div></div><div class="mini-bar-label">Starting</div></div></td>
+              <td>Apr 27</td>
+              <td><span class="tag tag-evidence">Evidence</span></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:20px;"><div class="client-row-name"><div class="av-sm" style="background:#F4C0D1;color:#72243E;">ML</div><div><div class="cl-name">Margaret Lee</div><div class="cl-since">margaret@email.com</div></div></div></td>
+              <td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td>
+              <td>61</td><td>Ongoing · W24</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:95%"></div></div><div class="mini-bar-label">95%</div></div></td>
+              <td>Apr 27</td>
+              <td><span class="tag tag-strength">Strength</span></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:20px;"><div class="client-row-name"><div class="av-sm" style="background:#FBEAF0;color:#993556;">KM</div><div><div class="cl-name">Karen Mitchell</div><div class="cl-since">karen@email.com</div></div></div></td>
+              <td><span class="status-pill status-checkin"><span class="status-dot"></span>Renewal due</span></td>
+              <td>58</td><td>1:1 Private · W16</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:88%"></div></div><div class="mini-bar-label">88%</div></div></td>
+              <td>Apr 24</td>
+              <td><span class="tag tag-fuel">Fuel</span></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:20px;"><div class="client-row-name"><div class="av-sm" style="background:#D4537E;color:white;">LR</div><div><div class="cl-name">Linda Rodriguez</div><div class="cl-since">linda@email.com</div></div></div></td>
+              <td><span class="status-pill status-active"><span class="status-dot"></span>Active</span></td>
+              <td>55</td><td>Method Program · W6</td>
+              <td><div class="mini-bar-wrap"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:79%"></div></div><div class="mini-bar-label">79%</div></div></td>
+              <td>Apr 26</td>
+              <td><span class="tag tag-strength">Strength</span></td>
+              <td><span class="action-link">View →</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CLIENT PROFILE -->
+    <div id="screen-client-profile" class="screen">
+      <div style="margin-bottom:18px;">
+        <button class="btn-ghost" style="padding:6px 0;font-size:12px;" onclick="showScreen('clients')">← Back to all clients</button>
+      </div>
+      <div class="profile-grid">
+        <div class="profile-side">
+          <div class="profile-card">
+            <div class="profile-header">
+              <div class="profile-av" id="profile-av">SC</div>
+              <div class="profile-name" id="profile-name">Sarah Chen</div>
+              <div class="profile-tag" id="profile-tag">Week 14 of 16 · 1:1 Private Coaching</div>
+            </div>
+            <div class="profile-body">
+              <div class="profile-stat-row">
+                <div class="profile-stat"><div class="profile-stat-num" id="ps-compliance">87%</div><div class="profile-stat-lbl">Compliance</div></div>
+                <div class="profile-stat"><div class="profile-stat-num" id="ps-streak">14</div><div class="profile-stat-lbl">Week streak</div></div>
+                <div class="profile-stat"><div class="profile-stat-num" id="ps-workouts">38</div><div class="profile-stat-lbl">Workouts</div></div>
+              </div>
+              <div class="info-row"><span class="info-label">Age</span><span class="info-val" id="pi-age">52</span></div>
+              <div class="info-row"><span class="info-label">Start date</span><span class="info-val" id="pi-start">Jan 13, 2025</span></div>
+              <div class="info-row"><span class="info-label">Next check-in</span><span class="info-val" id="pi-checkin">May 1, 2026</span></div>
+              <div class="info-row"><span class="info-label">Weight</span><span class="info-val" id="pi-weight">147 lbs (−4)</span></div>
+              <div class="info-row"><span class="info-label">Protein avg</span><span class="info-val" id="pi-protein">112g / 130g goal</span></div>
+              <div class="info-row"><span class="info-label">Energy score</span><span class="info-val" id="pi-energy">7.5 / 10</span></div>
+              <div style="margin-top:14px;display:flex;gap:8px;">
+                <button class="btn-pri" style="flex:1;font-size:11px;padding:7px;" onclick="showScreen('messages')">Message</button>
+                <button class="btn-sec" style="flex:1;font-size:11px;padding:7px;" onclick="openCheckin()">Check-in</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd"><div class="card-hd-title">Pillar scores</div></div>
+            <div class="pillar-list">
+              <div class="pillar-row">
+                <div class="pillar-top"><span class="pillar-name">Real Strength</span><span class="pillar-pct">78%</span></div>
+                <div class="pillar-track"><div class="pillar-fill" style="width:78%"></div></div>
+                <div class="pillar-note">3 of 4 sessions logged this week</div>
+              </div>
+              <div class="pillar-row">
+                <div class="pillar-top"><span class="pillar-name">Real Fuel</span><span class="pillar-pct">86%</span></div>
+                <div class="pillar-track"><div class="pillar-fill" style="width:86%"></div></div>
+                <div class="pillar-note">Protein goal hit 6 of 7 days</div>
+              </div>
+              <div class="pillar-row">
+                <div class="pillar-top"><span class="pillar-name">Real Evidence</span><span class="pillar-pct">92%</span></div>
+                <div class="pillar-track"><div class="pillar-fill" style="width:92%"></div></div>
+                <div class="pillar-note">Education module completed</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-main">
+          <div class="card">
+            <div class="card-hd"><div class="card-hd-title">Strength progress</div></div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;color:var(--ink);">Goblet squat</span><span style="font-size:12px;color:var(--rose);">20 → 30 lbs <span style="color:var(--success);font-size:10px;">+50%</span></span></div><div class="pillar-track"><div class="pillar-fill" style="width:75%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;color:var(--ink);">Dumbbell row</span><span style="font-size:12px;color:var(--rose);">12 → 20 lbs <span style="color:var(--success);font-size:10px;">+67%</span></span></div><div class="pillar-track"><div class="pillar-fill" style="width:80%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;color:var(--ink);">Romanian deadlift</span><span style="font-size:12px;color:var(--rose);">25 → 35 lbs <span style="color:var(--success);font-size:10px;">+40%</span></span></div><div class="pillar-track"><div class="pillar-fill" style="width:70%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;color:var(--ink);">Overhead press</span><span style="font-size:12px;color:var(--rose);">8 → 15 lbs <span style="color:var(--success);font-size:10px;">+88%</span></span></div><div class="pillar-track"><div class="pillar-fill" style="width:65%"></div></div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd"><div class="card-hd-title">Recent notes from Liz</div><button class="btn-ghost" style="font-size:11px;padding:4px 10px;" onclick="openNote()">+ Add note</button></div>
+            <div style="display:flex;flex-direction:column;gap:10px;" id="client-notes">
+              <div style="padding:12px;background:var(--parchment);border-radius:var(--r-sm);">
+                <div style="font-size:10px;color:var(--rose);font-weight:400;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;">Apr 26, 2026</div>
+                <div style="font-size:12px;color:var(--ink);line-height:1.65;">Hip hinge form has improved significantly this week. RDL tempo was controlled and intentional. Recommended adding 2.5 lbs next session if last set feels manageable.</div>
+              </div>
+              <div style="padding:12px;background:var(--parchment);border-radius:var(--r-sm);">
+                <div style="font-size:10px;color:var(--rose);font-weight:400;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;">Apr 19, 2026</div>
+                <div style="font-size:12px;color:var(--ink);line-height:1.65;">Week 13 check-in complete. Energy score up to 7.5. Client reports better sleep and less 3pm crash. Protein consistency improving — hit goal 5 of 7 days.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd"><div class="card-hd-title">Alerts</div></div>
+            <div class="alert-list">
+              <div class="alert-item alert-good"><div class="alert-dot"></div><div>Week 14 program on track. Final two weeks focus: progressive overload on all major lifts.</div></div>
+              <div class="alert-item alert-info"><div class="alert-dot"></div><div>Protein at 86% of goal. Recommend adding 2 eggs at breakfast to close the gap.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECK-INS -->
+    <div id="screen-checkins" class="screen">
+      <div class="alert-list" style="margin-bottom:20px;">
+        <div class="alert-item alert-warn"><div class="alert-dot"></div><div><strong>3 check-ins pending</strong> — Sarah Chen (Week 14), Jennifer Walsh (Week 8 — urgent), Karen Mitchell (Program renewal)</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;" id="checkin-list">
+        <div class="card">
+          <div class="card-hd">
+            <div style="display:flex;align-items:center;gap:10px;"><div class="av-sm" style="background:#D4537E;color:white;">SC</div><div><div class="card-hd-title">Sarah Chen — Week 14 check-in</div><div style="font-size:11px;color:var(--ink-3);font-weight:300;">Due: May 1, 2026 · 1:1 Private Coaching</div></div></div>
+            <button class="btn-pri" style="font-size:11px;" onclick="openCheckin()">Complete check-in</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div style="background:var(--parchment);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Compliance</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--rose);">87%</div></div>
+            <div style="background:var(--parchment);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Workouts</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--rose);">3/4</div></div>
+            <div style="background:var(--parchment);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Protein avg</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--rose);">112g</div></div>
+            <div style="background:var(--parchment);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Energy</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--rose);">7.5/10</div></div>
+          </div>
+        </div>
+        <div class="card" style="border-color:var(--warn-pale);">
+          <div class="card-hd">
+            <div style="display:flex;align-items:center;gap:10px;"><div class="av-sm" style="background:#993556;color:white;">JW</div><div><div class="card-hd-title">Jennifer Walsh — Week 8 check-in <span class="tag tag-new" style="margin-left:6px;">Urgent</span></div><div style="font-size:11px;color:var(--warn);font-weight:300;">Protein dropped to 68g average — flag and review</div></div></div>
+            <button class="btn-pri" style="font-size:11px;" onclick="openCheckin()">Complete check-in</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div style="background:var(--warn-pale);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--warn);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Compliance</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--warn);">61%</div></div>
+            <div style="background:var(--warn-pale);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--warn);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Workouts</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--warn);">2/4</div></div>
+            <div style="background:var(--warn-pale);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--warn);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Protein avg</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--warn);">68g</div></div>
+            <div style="background:var(--warn-pale);padding:10px;border-radius:var(--r-sm);"><div style="font-size:10px;color:var(--warn);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Energy</div><div style="font-size:18px;font-family:var(--font-serif);color:var(--warn);">5/10</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div id="screen-schedule" class="screen">
+      <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:12px;color:var(--ink-3);font-weight:300;">Week of April 28 — May 4, 2026</div>
+        <div style="display:flex;gap:8px;"><button class="btn-ghost">← Prev</button><button class="btn-ghost">Next →</button></div>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <div class="schedule-grid">
+          <div class="sch-cell sch-head">Client</div>
+          <div class="sch-cell sch-head" style="text-align:center;">Mon</div>
+          <div class="sch-cell sch-head" style="text-align:center;">Tue</div>
+          <div class="sch-cell sch-head" style="text-align:center;">Wed</div>
+          <div class="sch-cell sch-head" style="text-align:center;">Thu</div>
+          <div class="sch-cell sch-head" style="text-align:center;">Fri</div>
+          <div class="sch-cell sch-head" style="text-align:center;">Sat</div>
+          <div class="sch-cell sch-head" style="text-align:center;">Sun</div>
+
+          <div class="sch-cell sch-client-cell"><div class="av-sm" style="background:#D4537E;color:white;width:24px;height:24px;font-size:9px;">SC</div>Sarah Chen</div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-done">✓ Upper</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-done">✓ Lower</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-workout">Full body</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-done">✓ Full</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Walk</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+
+          <div class="sch-cell sch-client-cell"><div class="av-sm" style="background:#993556;color:white;width:24px;height:24px;font-size:9px;">JW</div>Jennifer Walsh</div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-done">✓ Upper</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Missed</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-workout">Lower</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-workout">Full</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+
+          <div class="sch-cell sch-client-cell"><div class="av-sm" style="background:#F4C0D1;color:#72243E;width:24px;height:24px;font-size:9px;">ML</div>Margaret Lee</div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-done">✓ Full</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-done">✓ Full</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-workout">Upper</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-done">✓ Lower</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">Rest</span></div>
+
+          <div class="sch-cell sch-client-cell"><div class="av-sm" style="background:#72243E;color:white;width:24px;height:24px;font-size:9px;">DP</div>Diana Park</div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">—</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">—</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">—</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-workout">Intro</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">—</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">—</span></div>
+          <div class="sch-cell" style="text-align:center;"><span class="sch-rest">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="screen-messages" class="screen">
+      <div class="msg-layout">
+        <div class="msg-list">
+          <div class="msg-list-hd">All conversations</div>
+          <div class="msg-thread active" onclick="switchThread('sarah')">
+            <div class="mt-av" style="background:#D4537E;">SC</div>
+            <div style="flex:1;min-width:0;">
+              <div class="mt-name">Sarah Chen</div>
+              <div class="mt-preview">Is it okay to walk on rest days?</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><div class="mt-time">9:05 AM</div><div class="mt-unread"></div></div>
+          </div>
+          <div class="msg-thread" onclick="switchThread('jennifer')">
+            <div class="mt-av" style="background:#993556;">JW</div>
+            <div style="flex:1;min-width:0;">
+              <div class="mt-name">Jennifer Walsh</div>
+              <div class="mt-preview">I've been struggling this week</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><div class="mt-time">Tue</div><div class="mt-unread"></div></div>
+          </div>
+          <div class="msg-thread" onclick="switchThread('margaret')">
+            <div class="mt-av" style="background:#F4C0D1;color:#72243E;">ML</div>
+            <div style="flex:1;min-width:0;">
+              <div class="mt-name">Margaret Lee</div>
+              <div class="mt-preview">Goblet squat PR today!</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><div class="mt-time">Mon</div></div>
+          </div>
+          <div class="msg-thread" onclick="switchThread('diana')">
+            <div class="mt-av" style="background:#72243E;">DP</div>
+            <div style="flex:1;min-width:0;">
+              <div class="mt-name">Diana Park</div>
+              <div class="mt-preview">So excited to get started!</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><div class="mt-time">Sun</div><div class="mt-unread"></div></div>
+          </div>
+        </div>
+        <div class="msg-pane">
+          <div class="msg-pane-hd">
+            <div class="mt-av" style="background:#D4537E;width:30px;height:30px;font-size:11px;" id="mp-av">SC</div>
+            <div><div class="mp-name" id="mp-name">Sarah Chen</div><div class="mp-status">Active now</div></div>
+            <div class="mp-actions">
+              <button class="btn-sec" style="font-size:11px;padding:5px 12px;" onclick="showClient('sarah')">View profile</button>
+            </div>
+          </div>
+          <div class="msg-body" id="liz-msg-body">
+            <div class="bubble-wrap client">
+              <div class="bubble">Is it okay to do a light walk on rest days or should I fully rest?</div>
+              <div class="bubble-time">Apr 27 · 9:05 AM</div>
+            </div>
+          </div>
+          <div class="msg-input-row">
+            <input class="msg-in" id="liz-msg-input" placeholder="Message Sarah..." onkeydown="lizSend(event)" />
+            <button class="msg-send-btn" onclick="lizSendBtn()">
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 7L13 1L9 7L13 13L1 7Z" fill="white"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRAMS -->
+    <div id="screen-programs" class="screen">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:18px;"><button class="btn-pri" onclick="showToast('Program builder coming soon.')">+ Create program</button></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+        <div class="card" style="cursor:pointer;" onclick="showToast('Opening program builder...')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div><div style="font-size:15px;font-weight:400;color:var(--ink);margin-bottom:3px;font-family:var(--font-serif);">The Strength Realized Method</div><div style="font-size:11px;color:var(--ink-3);font-weight:300;">16 weeks · 1:1 Private</div></div>
+            <span class="tag tag-strength">Active</span>
+          </div>
+          <div style="font-size:12px;color:var(--ink-3);line-height:1.65;margin-bottom:12px;font-weight:300;">Full-body dumbbell training. Progressive overload across 16 weeks. Real Fuel integration. Form-first approach. No HIIT.</div>
+          <div style="display:flex;gap:14px;font-size:11px;color:var(--ink-3);"><span><strong style="color:var(--ink);font-weight:400;">7</strong> active clients</span><span><strong style="color:var(--ink);font-weight:400;">4</strong> workouts/week</span><span><strong style="color:var(--ink);font-weight:400;">84%</strong> avg compliance</span></div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="showToast('Opening program builder...')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+            <div><div style="font-size:15px;font-weight:400;color:var(--ink);margin-bottom:3px;font-family:var(--font-serif);">Foundations — Beginner Track</div><div style="font-size:11px;color:var(--ink-3);font-weight:300;">8 weeks · New clients</div></div>
+            <span class="tag tag-evidence">Active</span>
+          </div>
+          <div style="font-size:12px;color:var(--ink-3);line-height:1.65;margin-bottom:12px;font-weight:300;">Introduction to intentional strength training. Form fundamentals, Real Fuel basics, metabolic education.</div>
+          <div style="display:flex;gap:14px;font-size:11px;color:var(--ink-3);"><span><strong style="color:var(--ink);font-weight:400;">3</strong> active clients</span><span><strong style="color:var(--ink);font-weight:400;">3</strong> workouts/week</span><span><strong style="color:var(--ink);font-weight:400;">79%</strong> avg compliance</span></div>
+        </div>
+        <div class="card" style="cursor:pointer;border-style:dashed;" onclick="showToast('Program builder coming soon.')">
+          <div style="text-align:center;padding:20px 0;"><div style="font-size:24px;margin-bottom:8px;">+</div><div style="font-size:13px;color:var(--ink-3);font-weight:300;">Create new program</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="screen-analytics" class="screen">
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-c"><div class="stat-lbl">Total workouts logged</div><div class="stat-num">284</div><div class="stat-delta delta-up">+38 this month</div></div>
+        <div class="stat-c"><div class="stat-lbl">Avg protein compliance</div><div class="stat-num">81<span class="stat-unit">%</span></div><div class="stat-delta delta-up">+7% vs last month</div></div>
+        <div class="stat-c"><div class="stat-lbl">Client retention</div><div class="stat-num">94<span class="stat-unit">%</span></div><div class="stat-delta delta-up">1 renewal pending</div></div>
+        <div class="stat-c"><div class="stat-lbl">Avg energy score</div><div class="stat-num">7.1<span class="stat-unit">/10</span></div><div class="stat-delta delta-up">+1.4 since intake</div></div>
+        <div class="stat-c"><div class="stat-lbl">Avg weight change</div><div class="stat-num">-3.2<span class="stat-unit">lbs</span></div><div class="stat-delta delta-up">Across active clients</div></div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-hd"><div class="card-hd-title">Weekly workouts logged — all clients</div></div>
+          <div class="chart-wrap" id="analytics-chart"></div>
+          <div style="display:flex;gap:4px;margin-top:4px;" id="analytics-labels"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-hd-title">Pillar compliance breakdown</div></div>
+          <div class="donut-wrap">
+            <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#F3EFE9" stroke-width="14"/>
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#D4537E" stroke-width="14" stroke-dasharray="195 244" stroke-dashoffset="61" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#993556" stroke-width="14" stroke-dasharray="180 244" stroke-dashoffset="-134" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="38" fill="none" stroke="#2A6E47" stroke-width="14" stroke-dasharray="222 244" stroke-dashoffset="-314" transform="rotate(-90 50 50)"/>
+              <text x="50" y="54" text-anchor="middle" font-size="13" fill="#1C1715" font-family="Cormorant Garamond,serif" font-weight="500">82%</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#D4537E;"></div>Real Strength — 80%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#993556;"></div>Real Fuel — 74%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2A6E47;"></div>Real Evidence — 91%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><div class="card-hd-title">Client outcome summary</div></div>
+        <table class="client-table">
+          <thead><tr><th>Client</th><th>Weight change</th><th>Strength gain (avg)</th><th>Energy score</th><th>Protein compliance</th><th>Workouts completed</th></tr></thead>
+          <tbody>
+            <tr><td><div class="cl-name">Sarah Chen</div></td><td style="color:var(--success);">−4 lbs</td><td style="color:var(--rose);">+61% avg</td><td>7.5 / 10</td><td>86%</td><td>38</td></tr>
+            <tr><td><div class="cl-name">Margaret Lee</div></td><td style="color:var(--success);">−6.5 lbs</td><td style="color:var(--rose);">+78% avg</td><td>8.5 / 10</td><td>94%</td><td>67</td></tr>
+            <tr><td><div class="cl-name">Karen Mitchell</div></td><td style="color:var(--success);">−5 lbs</td><td style="color:var(--rose);">+55% avg</td><td>7 / 10</td><td>88%</td><td>44</td></tr>
+            <tr><td><div class="cl-name">Jennifer Walsh</div></td><td style="color:var(--ink-3);">−1 lbs</td><td style="color:var(--rose);">+22% avg</td><td>5 / 10</td><td>61%</td><td>18</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ADD CLIENT MODAL -->
+<div class="overlay" id="add-client-modal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('add-client-modal')">×</button>
+    <div class="modal-title">Add new client</div>
+    <div class="modal-sub">They will receive a welcome email with access to the client portal.</div>
+    <div class="form-2col">
+      <div class="form-grp"><label class="form-lbl">First name</label><input class="form-ctrl" placeholder="Sarah" /></div>
+      <div class="form-grp"><label class="form-lbl">Last name</label><input class="form-ctrl" placeholder="Chen" /></div>
+    </div>
+    <div class="form-grp"><label class="form-lbl">Email</label><input class="form-ctrl" type="email" placeholder="client@email.com" /></div>
+    <div class="form-2col">
+      <div class="form-grp"><label class="form-lbl">Age</label><input class="form-ctrl" type="number" placeholder="52" /></div>
+      <div class="form-grp"><label class="form-lbl">Start date</label><input class="form-ctrl" type="date" value="2026-04-28" /></div>
+    </div>
+    <div class="form-grp"><label class="form-lbl">Program</label>
+      <select class="form-ctrl"><option>The Strength Realized Method (16 wk)</option><option>Foundations — Beginner Track (8 wk)</option><option>Ongoing 1:1 Private Coaching</option></select>
+    </div>
+    <div class="form-grp"><label class="form-lbl">Primary pillar focus</label>
+      <select class="form-ctrl"><option>Real Strength</option><option>Real Fuel</option><option>Real Evidence</option><option>All three equally</option></select>
+    </div>
+    <div class="form-grp"><label class="form-lbl">Intake notes</label><textarea class="form-ctrl" placeholder="Goals, history, anything important from the discovery call..."></textarea></div>
+    <button class="btn-pri" style="width:100%;padding:11px;font-size:13px;margin-top:4px;" onclick="submitNewClient()">Add client & send welcome email</button>
+  </div>
+</div>
+
+<!-- CHECK-IN MODAL -->
+<div class="overlay" id="checkin-modal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('checkin-modal')">×</button>
+    <div class="modal-title">Week 14 check-in — Sarah Chen</div>
+    <div class="modal-sub">Review metrics and leave notes for next week.</div>
+    <div class="form-2col">
+      <div class="form-grp"><label class="form-lbl">Workouts completed</label><input class="form-ctrl" placeholder="e.g. 3 of 4" /></div>
+      <div class="form-grp"><label class="form-lbl">Avg protein (g)</label><input class="form-ctrl" placeholder="e.g. 112" /></div>
+    </div>
+    <div class="form-2col">
+      <div class="form-grp"><label class="form-lbl">Energy score (1–10)</label><input class="form-ctrl" placeholder="e.g. 7.5" /></div>
+      <div class="form-grp"><label class="form-lbl">Weight (lbs)</label><input class="form-ctrl" placeholder="e.g. 147" /></div>
+    </div>
+    <div class="form-grp"><label class="form-lbl">Coach notes for next week</label><textarea class="form-ctrl" placeholder="What to focus on, what to adjust, encouragement..."></textarea></div>
+    <div class="form-grp"><label class="form-lbl">Program adjustment?</label>
+      <select class="form-ctrl"><option>No changes — continue as planned</option><option>Increase weight on major lifts</option><option>Adjust nutrition targets</option><option>Add deload week</option><option>Custom adjustment</option></select>
+    </div>
+    <button class="btn-pri" style="width:100%;padding:11px;font-size:13px;margin-top:4px;" onclick="submitCheckin()">Save check-in notes</button>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="overlay" id="note-modal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('note-modal')">×</button>
+    <div class="modal-title">Add coach note</div>
+    <div class="modal-sub">Private note — visible to you only.</div>
+    <div class="form-grp"><label class="form-lbl">Date</label><input class="form-ctrl" type="date" value="2026-04-28" /></div>
+    <div class="form-grp"><label class="form-lbl">Note</label><textarea class="form-ctrl" style="min-height:120px;" placeholder="Observations, form notes, progress highlights, things to address..."></textarea></div>
+    <div class="form-grp"><label class="form-lbl">Tag</label>
+      <select class="form-ctrl"><option>General</option><option>Form observation</option><option>Nutrition</option><option>Progress milestone</option><option>Flag for follow-up</option></select>
+    </div>
+    <button class="btn-pri" style="width:100%;padding:11px;font-size:13px;" onclick="submitNote()">Save note</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const pageNames = {
+  overview: 'Overview',
+  clients: 'All Clients',
+  'client-profile': 'Client Profile',
+  checkins: 'Check-ins',
+  schedule: 'Schedule',
+  messages: 'Messages',
+  programs: 'Programs',
+  analytics: 'Analytics'
+};
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('screen-' + name);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.rail-btn').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + name + "'")) b.classList.add('active');
+  });
+  document.getElementById('tb-title').textContent = pageNames[name] || name;
+  if (name === 'analytics') buildAnalyticsChart();
+}
+
+const clientData = {
+  sarah: { av: 'SC', bg: '#D4537E', name: 'Sarah Chen', tag: 'Week 14 of 16 · 1:1 Private Coaching', compliance: '87%', streak: '14', workouts: '38', age: '52', start: 'Jan 13, 2025', checkin: 'May 1, 2026', weight: '147 lbs (−4)', protein: '112g / 130g goal', energy: '7.5 / 10' },
+  jennifer: { av: 'JW', bg: '#993556', name: 'Jennifer Walsh', tag: 'Week 8 of 16 · 1:1 Private Coaching', compliance: '61%', streak: '8', workouts: '18', age: '47', start: 'Feb 5, 2025', checkin: 'Apr 30, 2026', weight: '162 lbs (−1)', protein: '68g / 120g goal', energy: '5 / 10' },
+  diana: { av: 'DP', bg: '#72243E', name: 'Diana Park', tag: 'Week 1 of 16 · 1:1 Private Coaching', compliance: '—', streak: '0', workouts: '0', age: '44', start: 'Apr 27, 2026', checkin: 'May 4, 2026', weight: 'Not yet logged', protein: 'Not yet logged', energy: '—' }
+};
+
+function showClient(id) {
+  const d = clientData[id];
+  if (!d) return;
+  document.getElementById('profile-av').textContent = d.av;
+  document.getElementById('profile-av').style.background = d.bg;
+  document.getElementById('profile-name').textContent = d.name;
+  document.getElementById('profile-tag').textContent = d.tag;
+  document.getElementById('ps-compliance').textContent = d.compliance;
+  document.getElementById('ps-streak').textContent = d.streak;
+  document.getElementById('ps-workouts').textContent = d.workouts;
+  document.getElementById('pi-age').textContent = d.age;
+  document.getElementById('pi-start').textContent = d.start;
+  document.getElementById('pi-checkin').textContent = d.checkin;
+  document.getElementById('pi-weight').textContent = d.weight;
+  document.getElementById('pi-protein').textContent = d.protein;
+  document.getElementById('pi-energy').textContent = d.energy;
+  showScreen('client-profile');
+}
+
+function openAddClient() { document.getElementById('add-client-modal').classList.add('open'); }
+function openCheckin() { closeModal('add-client-modal'); document.getElementById('checkin-modal').classList.add('open'); }
+function openNote() { document.getElementById('note-modal').classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+
+function submitNewClient() {
+  closeModal('add-client-modal');
+  showToast('New client added. Welcome email sent.');
+  showScreen('clients');
+}
+function submitCheckin() {
+  closeModal('checkin-modal');
+  showToast('Check-in saved. Notes sent to client.');
+}
+function submitNote() {
+  const notes = document.getElementById('client-notes');
+  if (notes) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:12px;background:var(--parchment);border-radius:var(--r-sm);animation:fadeUp 0.2s ease;';
+    div.innerHTML = '<div style="font-size:10px;color:var(--rose);font-weight:400;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;">Apr 28, 2026</div><div style="font-size:12px;color:var(--ink);line-height:1.65;">New note added for this client.</div>';
+    notes.prepend(div);
+  }
+  closeModal('note-modal');
+  showToast('Note saved.');
+}
+
+const msgThreads = {
+  sarah: { av: 'SC', bg: '#D4537E', name: 'Sarah Chen', placeholder: 'Message Sarah...' },
+  jennifer: { av: 'JW', bg: '#993556', name: 'Jennifer Walsh', placeholder: 'Message Jennifer...' },
+  margaret: { av: 'ML', bg: '#F4C0D1', name: 'Margaret Lee', placeholder: 'Message Margaret...' },
+  diana: { av: 'DP', bg: '#72243E', name: 'Diana Park', placeholder: 'Message Diana...' }
+};
+function switchThread(id) {
+  const d = msgThreads[id];
+  document.getElementById('mp-av').textContent = d.av;
+  document.getElementById('mp-av').style.background = d.bg;
+  document.getElementById('mp-name').textContent = d.name;
+  document.getElementById('liz-msg-input').placeholder = d.placeholder;
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const body = document.getElementById('liz-msg-body');
+  body.innerHTML = '<div class="bubble-wrap client"><div class="bubble">Hi Liz — just checking in. Looking forward to Thursday\'s session!</div><div class="bubble-time">Just now</div></div>';
+}
+function lizSend(e) { if (e.key === 'Enter') lizSendBtn(); }
+function lizSendBtn() {
+  const input = document.getElementById('liz-msg-input');
+  const val = input.value.trim();
+  if (!val) return;
+  const body = document.getElementById('liz-msg-body');
+  const div = document.createElement('div');
+  div.className = 'bubble-wrap coach';
+  div.innerHTML = '<div class="bubble">' + val + '</div><div class="bubble-time">Just now</div>';
+  body.appendChild(div);
+  input.value = '';
+  body.scrollTop = body.scrollHeight;
+  showToast('Message sent.');
+}
+
+function filterClients(query) {
+  const rows = document.querySelectorAll('#clients-tbody tr');
+  rows.forEach(row => {
+    const name = row.querySelector('.cl-name');
+    if (!name) return;
+    row.style.display = name.textContent.toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function buildAnalyticsChart() {
+  const data = [22, 28, 24, 30, 26, 31, 28, 33, 29, 35, 32, 38];
+  const labels = ['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr'];
+  const chart = document.getElementById('analytics-chart');
+  const labelsEl = document.getElementById('analytics-labels');
+  if (!chart || chart.children.length > 0) return;
+  const max = Math.max(...data);
+  data.forEach((v, i) => {
+    const col = document.createElement('div');
+    col.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;';
+    const pct = Math.round((v / max) * 100);
+    col.innerHTML = '<div class="bar" style="width:100%;height:' + pct + '%;background:' + (i === data.length - 1 ? 'var(--rose)' : 'var(--rose-pale)') + ';border:1px solid var(--rose-mid);"><span class="bar-val">' + v + '</span></div><div class="bar-lbl">' + labels[i] + '</div>';
+    chart.appendChild(col);
+    labelsEl.appendChild(document.createElement('div'));
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
